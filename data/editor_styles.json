@@ -1,0 +1,25 @@
+{
+  "title": {
+    "style_name": "Title",
+    "label_he": "כותרת המסמך"
+  },
+  "heading1": {
+    "style_name": "Heading 1",
+    "label_he": "כותרת ראשית"
+  },
+  "heading2": {
+    "style_name": "Heading 2",
+    "label_he": "כותרת משנית"
+  },
+  "heading3": {
+    "style_name": "Heading 3",
+    "label_he": "כותרת שלישית"
+  },
+  "quote": {
+    "style_name": "Highlight / Quote",
+    "label_he": "ציטוט / הדגשה"
+  },
+  "footer": {
+    "text": "Yotam Ricas | Beyond the Keys | Learn how to learn"
+  }
+}

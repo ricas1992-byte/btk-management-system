@@ -1,0 +1,593 @@
+/* ========================================
+   Beyond the Keys - BTK Management System
+   Main Stylesheet
+   ======================================== */
+
+:root {
+  --bg-dark: #050811;
+  --bg-card: #0d1117;
+  --bg-hover: #161b22;
+  --text-light: #f6f7ff;
+  --text-muted: #8b949e;
+  --accent-blue: #58a6ff;
+  --accent-purple: #bc8cff;
+  --accent-green: #56d364;
+  --accent-yellow: #f0c746;
+  --accent-red: #f85149;
+  --border: #30363d;
+  --shadow: rgba(0, 0, 0, 0.5);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-light);
+  direction: rtl;
+  line-height: 1.6;
+}
+
+/* ======== Header ======== */
+.bt-header {
+  background: var(--bg-card);
+  border-bottom: 2px solid var(--border);
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.bt-logo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.bt-logo-img {
+  height: 50px;
+  width: auto;
+}
+
+.bt-logo-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.bt-brand {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent-blue);
+}
+
+.bt-sub {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  direction: ltr;
+  text-align: left;
+}
+
+/* ======== Navigation ======== */
+.bt-nav {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  padding: 0.5rem 2rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.bt-nav button {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-light);
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.bt-nav button:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-blue);
+}
+
+.bt-nav button.active {
+  background: var(--accent-blue);
+  border-color: var(--accent-blue);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ======== Main Content ======== */
+#app {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: calc(100vh - 200px);
+}
+
+/* ======== Footer ======== */
+.bt-footer {
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  padding: 1rem 2rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* ======== Module Containers ======== */
+.module-container {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.module-header {
+  margin-bottom: 2rem;
+}
+
+.module-title {
+  font-size: 2rem;
+  color: var(--accent-blue);
+  margin-bottom: 0.5rem;
+}
+
+.module-description {
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+/* ======== Cards ======== */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: all 0.2s;
+}
+
+.card:hover {
+  border-color: var(--accent-blue);
+  box-shadow: 0 4px 12px var(--shadow);
+}
+
+.card-title {
+  font-size: 1.2rem;
+  color: var(--accent-blue);
+  margin-bottom: 0.5rem;
+}
+
+.card-content {
+  color: var(--text-light);
+}
+
+.card-meta {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+/* ======== Buttons ======== */
+.btn {
+  background: var(--accent-blue);
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn:hover {
+  background: #4493e1;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px var(--shadow);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+  background: var(--border);
+  border-color: var(--accent-blue);
+}
+
+.btn-success {
+  background: var(--accent-green);
+}
+
+.btn-success:hover {
+  background: #46c054;
+}
+
+.btn-warning {
+  background: var(--accent-yellow);
+  color: var(--bg-dark);
+}
+
+.btn-warning:hover {
+  background: #e0b736;
+}
+
+.btn-danger {
+  background: var(--accent-red);
+}
+
+.btn-danger:hover {
+  background: #e84139;
+}
+
+.btn-group {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ======== Forms ======== */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+  width: 100%;
+  background: var(--bg-dark);
+  border: 1px solid var(--border);
+  color: var(--text-light);
+  padding: 0.7rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* ======== Editor ======== */
+.editor-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.editor-toolbar {
+  background: var(--bg-dark);
+  border-bottom: 1px solid var(--border);
+  padding: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.editor-toolbar button {
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  color: var(--text-light);
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+
+.editor-toolbar button:hover {
+  background: var(--border);
+  border-color: var(--accent-blue);
+}
+
+.editor-toolbar button.active {
+  background: var(--accent-blue);
+  border-color: var(--accent-blue);
+  color: #fff;
+}
+
+.editor-content {
+  padding: 2rem;
+  min-height: 400px;
+  background: #fff;
+  color: #000;
+  direction: rtl;
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.editor-content:focus {
+  outline: none;
+}
+
+/* ======== Lists ======== */
+.item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.list-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s;
+}
+
+.list-item:hover {
+  border-color: var(--accent-blue);
+}
+
+.list-item-content {
+  flex: 1;
+}
+
+.list-item-title {
+  font-weight: 600;
+  color: var(--text-light);
+  margin-bottom: 0.3rem;
+}
+
+.list-item-meta {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.list-item-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* ======== Status Badges ======== */
+.badge {
+  display: inline-block;
+  padding: 0.3rem 0.7rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.badge-success {
+  background: var(--accent-green);
+  color: #fff;
+}
+
+.badge-warning {
+  background: var(--accent-yellow);
+  color: var(--bg-dark);
+}
+
+.badge-info {
+  background: var(--accent-blue);
+  color: #fff;
+}
+
+.badge-danger {
+  background: var(--accent-red);
+  color: #fff;
+}
+
+.badge-secondary {
+  background: var(--bg-hover);
+  color: var(--text-light);
+  border: 1px solid var(--border);
+}
+
+/* ======== Modal ======== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s;
+}
+
+.modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 2rem;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px var(--shadow);
+}
+
+.modal-header {
+  margin-bottom: 1.5rem;
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  color: var(--accent-blue);
+}
+
+.modal-body {
+  margin-bottom: 1.5rem;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* ======== Stats Grid ======== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--accent-blue);
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* ======== Empty State ======== */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted);
+}
+
+.empty-state-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state-title {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-light);
+}
+
+.empty-state-description {
+  margin-bottom: 1.5rem;
+}
+
+/* ======== Progress Bar ======== */
+.progress-bar {
+  background: var(--bg-dark);
+  border-radius: 8px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  background: var(--accent-blue);
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+/* ======== Utilities ======== */
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-center {
+  text-align: center;
+}
+
+.mb-1 {
+  margin-bottom: 1rem;
+}
+
+.mb-2 {
+  margin-bottom: 2rem;
+}
+
+.mt-1 {
+  margin-top: 1rem;
+}
+
+.mt-2 {
+  margin-top: 2rem;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ======== Responsive ======== */
+@media (max-width: 768px) {
+  #app {
+    padding: 1rem;
+  }
+
+  .bt-header,
+  .bt-nav,
+  .bt-footer {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .module-title {
+    font-size: 1.5rem;
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
