@@ -1,25 +1,38 @@
 {
-  "title": {
-    "style_name": "Title",
-    "label_he": "כותרת המסמך"
-  },
-  "heading1": {
-    "style_name": "Heading 1",
-    "label_he": "כותרת ראשית"
-  },
-  "heading2": {
-    "style_name": "Heading 2",
-    "label_he": "כותרת משנית"
-  },
-  "heading3": {
-    "style_name": "Heading 3",
-    "label_he": "כותרת שלישית"
-  },
-  "quote": {
-    "style_name": "Highlight / Quote",
-    "label_he": "ציטוט / הדגשה"
-  },
-  "footer": {
-    "text": "Yotam Ricas | Beyond the Keys | Learn how to learn"
+  "styles": {
+    "title": {
+      "fontSize": "2em",
+      "fontWeight": "bold",
+      "marginBottom": "1em",
+      "color": "#1E3A5F"
+    },
+    "heading1": {
+      "fontSize": "1.75em",
+      "fontWeight": "bold",
+      "marginBottom": "0.75em",
+      "color": "#2E5C8A"
+    },
+    "heading2": {
+      "fontSize": "1.5em",
+      "fontWeight": "600",
+      "marginBottom": "0.5em",
+      "color": "#2E5C8A"
+    },
+    "heading3": {
+      "fontSize": "1.25em",
+      "fontWeight": "600",
+      "marginBottom": "0.5em",
+      "color": "#2E5C8A"
+    },
+    "quote": {
+      "fontStyle": "italic",
+      "borderRight": "4px solid #D4AF37",
+      "paddingRight": "1em",
+      "color": "#5A6C7D"
+    },
+    "normal": {
+      "fontSize": "1em",
+      "lineHeight": "1.8"
+    }
   }
 }
