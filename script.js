@@ -4,6 +4,49 @@
 // ================================================
 
 // ============================================
+// Theme Manager - Light/Dark Mode Toggle
+// ============================================
+class ThemeManager {
+  constructor() {
+    this.themeToggle = null;
+    this.themeIcon = null;
+    this.currentTheme = localStorage.getItem('btk-theme') || 'light';
+  }
+
+  init() {
+    this.themeToggle = document.getElementById('theme-toggle');
+    this.themeIcon = document.getElementById('theme-icon');
+
+    // Apply saved theme
+    this.applyTheme(this.currentTheme);
+
+    // Add event listener
+    if (this.themeToggle) {
+      this.themeToggle.addEventListener('click', () => this.toggleTheme());
+    }
+  }
+
+  applyTheme(theme) {
+    if (theme === 'dark') {
+      document.body.classList.add('dark-theme');
+      if (this.themeIcon) this.themeIcon.textContent = '☀️';
+    } else {
+      document.body.classList.remove('dark-theme');
+      if (this.themeIcon) this.themeIcon.textContent = '🌙';
+    }
+    this.currentTheme = theme;
+    localStorage.setItem('btk-theme', theme);
+  }
+
+  toggleTheme() {
+    const newTheme = this.currentTheme === 'light' ? 'dark' : 'light';
+    this.applyTheme(newTheme);
+  }
+}
+
+const themeManager = new ThemeManager();
+
+// ============================================
 // Data Manager - Git-First Data Management
 // ============================================
 class DataManager {
@@ -1250,6 +1293,9 @@ router.registerModule('docs', docLibrary);
 router.registerModule('knowledge', knowledgeEnv);
 router.registerModule('writing', writingStudio);
 router.registerModule('management', management);
+
+// Initialize theme manager
+themeManager.init();
 
 // Load default view
 router.navigate('dashboard');
