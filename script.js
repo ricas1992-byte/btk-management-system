@@ -862,6 +862,7 @@ class LearningEnvironmentModule {
             <option value="C03">C03 – מבוא למחקר למוזיקאים</option>
             <option value="C04">C04 – נוירופלסטיות ולמידה ממוקדת</option>
             <option value="C05">C05 – יומן אימון: מתודולוגיה איכותנית</option>
+            <option value="C05_1">C05_1 – מתודיקה לפסנתר: גישות ויישום</option>
             <option value="C06">C06 – ניתוח תנועה וקשב בנגינה</option>
             <option value="C07">C07 – תכנון מחקר אישי (Pre-Project)</option>
           </select>
@@ -1055,6 +1056,7 @@ class LearningEnvironmentModule {
             <option value="C03" ${item.course === 'C03' ? 'selected' : ''}>C03 – מבוא למחקר למוזיקאים</option>
             <option value="C04" ${item.course === 'C04' ? 'selected' : ''}>C04 – נוירופלסטיות ולמידה ממוקדת</option>
             <option value="C05" ${item.course === 'C05' ? 'selected' : ''}>C05 – יומן אימון: מתודולוגיה איכותנית</option>
+            <option value="C05_1" ${item.course === 'C05_1' ? 'selected' : ''}>C05_1 – מתודיקה לפסנתר: גישות ויישום</option>
             <option value="C06" ${item.course === 'C06' ? 'selected' : ''}>C06 – ניתוח תנועה וקשב בנגינה</option>
             <option value="C07" ${item.course === 'C07' ? 'selected' : ''}>C07 – תכנון מחקר אישי (Pre-Project)</option>
           </select>
