@@ -562,6 +562,8 @@ class LearningEnvironmentModule {
     this.app = app;
     this.dm = dataManager;
     this.currentItem = null;
+    this.viewMode = 'hierarchical'; // Default to hierarchical view
+    this.currentFilters = {};
   }
 
   async render() {
@@ -584,10 +586,21 @@ class LearningEnvironmentModule {
     await this.showKnowledgeList();
   }
 
-  async showKnowledgeList() {
+  async showKnowledgeList(filters = {}) {
     const data = await this.dm.load('knowledge.json');
-    const items = data.items || [];
+    let items = data.items || [];
     const workspace = document.getElementById('knowledge-workspace');
+
+    // Apply filters
+    if (filters.course) {
+      items = items.filter(item => item.course === filters.course);
+    }
+    if (filters.unitNumber) {
+      items = items.filter(item => item.unitNumber === filters.unitNumber);
+    }
+    if (filters.documentType) {
+      items = items.filter(item => item.documentType === filters.documentType);
+    }
 
     if (items.length === 0) {
       workspace.innerHTML = `
@@ -600,13 +613,195 @@ class LearningEnvironmentModule {
       return;
     }
 
+    // Get all unique values for filters
+    const allItems = data.items || [];
+    const allCourses = [...new Set(allItems.map(i => i.course).filter(c => c))].sort();
+    const allUnits = [...new Set(allItems.map(i => i.unitNumber).filter(u => u))].sort();
+    const allDocTypes = [...new Set(allItems.map(i => i.documentType).filter(d => d))];
+
     workspace.innerHTML = `
+      <div style="margin-bottom: 1.5rem;">
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+          <button class="btn ${!filters.course && !filters.unitNumber && !filters.documentType ? 'btn-success' : 'btn-secondary'}"
+                  onclick="knowledgeEnv.showKnowledgeList()">
+            📚 הכל
+          </button>
+          <button class="btn btn-secondary" onclick="knowledgeEnv.toggleViewMode()">
+            ${this.viewMode === 'hierarchical' ? '📋 תצוגה שטוחה' : '🗂 תצוגה היררכית'}
+          </button>
+        </div>
+
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; background: var(--bg-dark); padding: 1rem; border-radius: 8px;">
+          <div style="flex: 1; min-width: 200px;">
+            <label class="form-label" style="margin-bottom: 0.5rem; display: block;">סינון לפי קורס:</label>
+            <select class="form-select" onchange="knowledgeEnv.applyFilter('course', this.value)">
+              <option value="">-- כל הקורסים --</option>
+              ${allCourses.map(c => `<option value="${c}" ${filters.course === c ? 'selected' : ''}>${c}</option>`).join('')}
+            </select>
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <label class="form-label" style="margin-bottom: 0.5rem; display: block;">סינון לפי יחידה:</label>
+            <select class="form-select" onchange="knowledgeEnv.applyFilter('unitNumber', this.value)">
+              <option value="">-- כל היחידות --</option>
+              ${allUnits.map(u => `<option value="${u}" ${filters.unitNumber === u ? 'selected' : ''}>${u}</option>`).join('')}
+            </select>
+          </div>
+          <div style="flex: 1; min-width: 200px;">
+            <label class="form-label" style="margin-bottom: 0.5rem; display: block;">סינון לפי סוג:</label>
+            <select class="form-select" onchange="knowledgeEnv.applyFilter('documentType', this.value)">
+              <option value="">-- כל הסוגים --</option>
+              ${allDocTypes.map(d => `<option value="${d}" ${filters.documentType === d ? 'selected' : ''}>${d}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="knowledge-list-content"></div>
+    `;
+
+    // Store current filters
+    this.currentFilters = filters;
+
+    // Render based on view mode
+    if (this.viewMode === 'hierarchical') {
+      this.renderHierarchicalView(items);
+    } else {
+      this.renderFlatView(items);
+    }
+  }
+
+  renderHierarchicalView(items) {
+    const content = document.getElementById('knowledge-list-content');
+
+    // Group items by Course → UnitNumber → DocumentType
+    const hierarchy = {};
+
+    items.forEach(item => {
+      const course = item.course || 'ללא קורס';
+      const unit = item.unitNumber || 'ללא יחידה';
+      const docType = item.documentType || 'ללא סוג';
+
+      if (!hierarchy[course]) hierarchy[course] = {};
+      if (!hierarchy[course][unit]) hierarchy[course][unit] = {};
+      if (!hierarchy[course][unit][docType]) hierarchy[course][unit][docType] = [];
+
+      hierarchy[course][unit][docType].push(item);
+    });
+
+    // Sort courses
+    const courses = Object.keys(hierarchy).sort();
+
+    // Document type order
+    const docTypeOrder = ['Theory', 'Exercise', 'Summary', 'Reflection'];
+
+    let html = '<div style="display: flex; flex-direction: column; gap: 1.5rem;">';
+
+    courses.forEach(course => {
+      html += `
+        <div class="card" style="background: var(--bg-darker);">
+          <div class="card-title" style="background: var(--accent-purple); color: white; padding: 1rem; border-radius: 6px 6px 0 0; margin: -1rem -1rem 1rem -1rem;">
+            ${course}
+          </div>
+          <div class="card-content">
+      `;
+
+      // Sort units
+      const units = Object.keys(hierarchy[course]).sort();
+
+      units.forEach(unit => {
+        html += `
+          <div style="margin-bottom: 1.5rem; padding: 1rem; background: var(--bg-dark); border-radius: 6px; border-right: 4px solid var(--accent-blue);">
+            <h3 style="color: var(--accent-blue); margin: 0 0 1rem 0;">${unit}</h3>
+        `;
+
+        // Sort document types by predefined order
+        const docTypes = Object.keys(hierarchy[course][unit]).sort((a, b) => {
+          const indexA = docTypeOrder.indexOf(a);
+          const indexB = docTypeOrder.indexOf(b);
+          if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+          if (indexA === -1) return 1;
+          if (indexB === -1) return -1;
+          return indexA - indexB;
+        });
+
+        docTypes.forEach(docType => {
+          const docItems = hierarchy[course][unit][docType];
+
+          html += `
+            <div style="margin-bottom: 1rem;">
+              <div style="font-weight: bold; color: var(--accent-green); margin-bottom: 0.5rem; padding: 0.5rem; background: var(--bg-darker); border-radius: 4px;">
+                📄 ${docType} (${docItems.length})
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-right: 1rem;">
+          `;
+
+          docItems.forEach(item => {
+            html += `
+              <div class="list-item" style="padding: 0.75rem; background: var(--bg-darker); border-radius: 4px; border-right: 3px solid var(--accent-green);">
+                <div style="display: flex; justify-content: space-between; align-items: start; gap: 1rem;">
+                  <div style="flex: 1;">
+                    <div style="font-weight: bold; margin-bottom: 0.25rem;">${item.title}</div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                      ${item.summary ? item.summary.substring(0, 100) + (item.summary.length > 100 ? '...' : '') : 'אין תקציר'}
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                      <span class="badge badge-info">${this.getTypeLabel(item.type)}</span>
+                      ${item.language ? `<span class="badge" style="background: var(--accent-orange);">${item.language}</span>` : ''}
+                      <span style="font-size: 0.85rem; color: var(--text-muted);">
+                        ${item.highlights || 0} הדגשות | ${item.notes || 0} הערות
+                      </span>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">
+                      ${item.createdAt}
+                    </div>
+                  </div>
+                  <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
+                    <button class="btn btn-secondary" style="padding: 0.5rem 1rem;" onclick="knowledgeEnv.viewItem('${item.id}')">👁 צפייה</button>
+                    <button class="btn btn-danger" style="padding: 0.5rem 1rem;" onclick="knowledgeEnv.deleteItem('${item.id}')">🗑</button>
+                  </div>
+                </div>
+              </div>
+            `;
+          });
+
+          html += `
+              </div>
+            </div>
+          `;
+        });
+
+        html += `
+          </div>
+        `;
+      });
+
+      html += `
+          </div>
+        </div>
+      `;
+    });
+
+    html += '</div>';
+
+    content.innerHTML = html;
+  }
+
+  renderFlatView(items) {
+    const content = document.getElementById('knowledge-list-content');
+
+    content.innerHTML = `
       <div class="card-grid">
         ${items.map(item => `
           <div class="card">
             <div class="card-title">${item.title}</div>
             <div class="card-content">
-              <span class="badge badge-info">${this.getTypeLabel(item.type)}</span>
+              <div style="margin-bottom: 0.5rem;">
+                <span class="badge badge-info">${this.getTypeLabel(item.type)}</span>
+                ${item.course ? `<span class="badge" style="background: var(--accent-purple);">${item.course}</span>` : ''}
+                ${item.unitNumber ? `<span class="badge" style="background: var(--accent-blue);">${item.unitNumber}</span>` : ''}
+                ${item.documentType ? `<span class="badge" style="background: var(--accent-green);">${item.documentType}</span>` : ''}
+                ${item.language ? `<span class="badge" style="background: var(--accent-orange);">${item.language}</span>` : ''}
+              </div>
               <p style="margin-top: 0.5rem;">${item.summary || 'אין תקציר'}</p>
             </div>
             <div class="card-meta">
@@ -620,6 +815,21 @@ class LearningEnvironmentModule {
         `).join('')}
       </div>
     `;
+  }
+
+  toggleViewMode() {
+    this.viewMode = this.viewMode === 'hierarchical' ? 'flat' : 'hierarchical';
+    this.showKnowledgeList(this.currentFilters || {});
+  }
+
+  applyFilter(filterType, value) {
+    const filters = this.currentFilters || {};
+    if (value) {
+      filters[filterType] = value;
+    } else {
+      delete filters[filterType];
+    }
+    this.showKnowledgeList(filters);
   }
 
   getTypeLabel(type) {
@@ -644,7 +854,45 @@ class LearningEnvironmentModule {
         </div>
 
         <div class="form-group">
-          <label class="form-label">סוג</label>
+          <label class="form-label">קורס (Course)</label>
+          <select class="form-select" id="knowledge-course">
+            <option value="">-- בחר קורס --</option>
+            <option value="C01">C01 – מבוא לאנטומיה ומכניקה של נגינה</option>
+            <option value="C02">C02 – מבוא למדעי המוח במוזיקה</option>
+            <option value="C03">C03 – מבוא למחקר למוזיקאים</option>
+            <option value="C04">C04 – נוירופלסטיות ולמידה ממוקדת</option>
+            <option value="C05">C05 – יומן אימון: מתודולוגיה איכותנית</option>
+            <option value="C06">C06 – ניתוח תנועה וקשב בנגינה</option>
+            <option value="C07">C07 – תכנון מחקר אישי (Pre-Project)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">יחידה (Unit Number)</label>
+          <input type="text" class="form-input" id="knowledge-unit" placeholder="למשל: U01, U02, U03">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">סוג מסמך (Document Type)</label>
+          <select class="form-select" id="knowledge-doctype">
+            <option value="">-- בחר סוג --</option>
+            <option value="Theory">Theory (תיאוריה)</option>
+            <option value="Exercise">Exercise (תרגול)</option>
+            <option value="Summary">Summary (סיכום)</option>
+            <option value="Reflection">Reflection (רפלקציה)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">שפה (Language)</label>
+          <select class="form-select" id="knowledge-language">
+            <option value="he">עברית (he)</option>
+            <option value="en">English (en)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">סוג קובץ</label>
           <select class="form-select" id="knowledge-type">
             <option value="pdf">PDF</option>
             <option value="text">טקסט</option>
@@ -671,34 +919,58 @@ class LearningEnvironmentModule {
     `;
   }
 
-  async saveItem() {
+  async saveItem(itemId = null) {
     const title = document.getElementById('knowledge-title').value;
     const type = document.getElementById('knowledge-type').value;
     const content = document.getElementById('knowledge-content').value;
     const summary = document.getElementById('knowledge-summary').value;
+    const course = document.getElementById('knowledge-course').value;
+    const unitNumber = document.getElementById('knowledge-unit').value;
+    const documentType = document.getElementById('knowledge-doctype').value;
+    const language = document.getElementById('knowledge-language').value;
 
     if (!title) {
       alert('יש למלא כותרת');
       return;
     }
 
-    const item = {
-      id: this.dm.generateId(),
-      title,
-      type,
-      content,
-      summary,
-      highlights: 0,
-      notes: 0,
-      createdAt: this.dm.formatDateTime()
-    };
-
     const data = await this.dm.load('knowledge.json');
-    data.items.push(item);
-    await this.dm.save('knowledge.json', data);
 
-    // Save to knowledge folder
-    localStorage.setItem(`btk_knowledge_${item.id}.json`, JSON.stringify(item));
+    if (itemId) {
+      // Edit existing item
+      const item = data.items.find(i => i.id === itemId);
+      if (item) {
+        item.title = title;
+        item.type = type;
+        item.content = content;
+        item.summary = summary;
+        item.course = course;
+        item.unitNumber = unitNumber;
+        item.documentType = documentType;
+        item.language = language;
+        item.updatedAt = this.dm.formatDateTime();
+      }
+    } else {
+      // Create new item
+      const item = {
+        id: this.dm.generateId(),
+        title,
+        type,
+        content,
+        summary,
+        course,
+        unitNumber,
+        documentType,
+        language,
+        highlights: 0,
+        notes: 0,
+        userNotes: [],
+        createdAt: this.dm.formatDateTime()
+      };
+      data.items.push(item);
+    }
+
+    await this.dm.save('knowledge.json', data);
 
     this.showToast('✓ החומר נשמר בהצלחה');
     await this.showKnowledgeList();
@@ -715,7 +987,14 @@ class LearningEnvironmentModule {
       <div class="card">
         <h2 class="card-title">${item.title}</h2>
         <div class="card-content">
-          <span class="badge badge-info">${this.getTypeLabel(item.type)}</span>
+          <div style="margin-bottom: 1rem;">
+            <span class="badge badge-info">${this.getTypeLabel(item.type)}</span>
+            ${item.course ? `<span class="badge" style="background: var(--accent-purple);">${item.course}</span>` : ''}
+            ${item.unitNumber ? `<span class="badge" style="background: var(--accent-blue);">${item.unitNumber}</span>` : ''}
+            ${item.documentType ? `<span class="badge" style="background: var(--accent-green);">${item.documentType}</span>` : ''}
+            ${item.language ? `<span class="badge" style="background: var(--accent-orange);">${item.language}</span>` : ''}
+          </div>
+
           <h3 style="margin-top: 1rem; color: var(--accent-blue);">תקציר</h3>
           <p>${item.summary || 'אין תקציר'}</p>
 
@@ -724,15 +1003,110 @@ class LearningEnvironmentModule {
             ${item.content || 'אין תוכן'}
           </div>
 
+          ${item.userNotes && item.userNotes.length > 0 ? `
+            <h3 style="margin-top: 1rem; color: var(--accent-blue);">הערות (${item.userNotes.length})</h3>
+            <div style="background: var(--bg-dark); padding: 1rem; border-radius: 6px; margin-top: 0.5rem;">
+              ${item.userNotes.map(note => `
+                <div style="margin-bottom: 0.5rem; padding: 0.5rem; background: var(--bg-darker); border-radius: 4px;">
+                  <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">${note.createdAt}</div>
+                  <div>${note.text}</div>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+
           <div style="margin-top: 1rem;">
-            <button class="btn" onclick="knowledgeEnv.addHighlight('${item.id}')">✨ הוסף הדגשה</button>
+            <button class="btn" onclick="knowledgeEnv.addHighlight('${item.id}')">✨ הוסף הדגשה (${item.highlights || 0})</button>
             <button class="btn btn-secondary" onclick="knowledgeEnv.addNote('${item.id}')">📝 הוסף הערה</button>
             <button class="btn btn-warning" onclick="knowledgeEnv.readAloud('${item.id}')">🔊 הקראה</button>
           </div>
 
           <div style="margin-top: 1rem;">
+            <button class="btn" onclick="knowledgeEnv.editItem('${item.id}')">✏️ עריכה</button>
             <button class="btn btn-secondary" onclick="knowledgeEnv.showKnowledgeList()">← חזרה</button>
           </div>
+        </div>
+      </div>
+    `;
+  }
+
+  async editItem(itemId) {
+    const data = await this.dm.load('knowledge.json');
+    const item = data.items.find(i => i.id === itemId);
+
+    if (!item) return;
+
+    const workspace = document.getElementById('knowledge-workspace');
+    workspace.innerHTML = `
+      <div class="card">
+        <h3 class="card-title">עריכת חומר למידה</h3>
+
+        <div class="form-group">
+          <label class="form-label">כותרת</label>
+          <input type="text" class="form-input" id="knowledge-title" value="${item.title || ''}" placeholder="שם החומר">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">קורס (Course)</label>
+          <select class="form-select" id="knowledge-course">
+            <option value="">-- בחר קורס --</option>
+            <option value="C01" ${item.course === 'C01' ? 'selected' : ''}>C01 – מבוא לאנטומיה ומכניקה של נגינה</option>
+            <option value="C02" ${item.course === 'C02' ? 'selected' : ''}>C02 – מבוא למדעי המוח במוזיקה</option>
+            <option value="C03" ${item.course === 'C03' ? 'selected' : ''}>C03 – מבוא למחקר למוזיקאים</option>
+            <option value="C04" ${item.course === 'C04' ? 'selected' : ''}>C04 – נוירופלסטיות ולמידה ממוקדת</option>
+            <option value="C05" ${item.course === 'C05' ? 'selected' : ''}>C05 – יומן אימון: מתודולוגיה איכותנית</option>
+            <option value="C06" ${item.course === 'C06' ? 'selected' : ''}>C06 – ניתוח תנועה וקשב בנגינה</option>
+            <option value="C07" ${item.course === 'C07' ? 'selected' : ''}>C07 – תכנון מחקר אישי (Pre-Project)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">יחידה (Unit Number)</label>
+          <input type="text" class="form-input" id="knowledge-unit" value="${item.unitNumber || ''}" placeholder="למשל: U01, U02, U03">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">סוג מסמך (Document Type)</label>
+          <select class="form-select" id="knowledge-doctype">
+            <option value="">-- בחר סוג --</option>
+            <option value="Theory" ${item.documentType === 'Theory' ? 'selected' : ''}>Theory (תיאוריה)</option>
+            <option value="Exercise" ${item.documentType === 'Exercise' ? 'selected' : ''}>Exercise (תרגול)</option>
+            <option value="Summary" ${item.documentType === 'Summary' ? 'selected' : ''}>Summary (סיכום)</option>
+            <option value="Reflection" ${item.documentType === 'Reflection' ? 'selected' : ''}>Reflection (רפלקציה)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">שפה (Language)</label>
+          <select class="form-select" id="knowledge-language">
+            <option value="he" ${item.language === 'he' ? 'selected' : ''}>עברית (he)</option>
+            <option value="en" ${item.language === 'en' ? 'selected' : ''}>English (en)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">סוג קובץ</label>
+          <select class="form-select" id="knowledge-type">
+            <option value="pdf" ${item.type === 'pdf' ? 'selected' : ''}>PDF</option>
+            <option value="text" ${item.type === 'text' ? 'selected' : ''}>טקסט</option>
+            <option value="image" ${item.type === 'image' ? 'selected' : ''}>תמונה</option>
+            <option value="video" ${item.type === 'video' ? 'selected' : ''}>וידאו</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">תוכן / הערות</label>
+          <textarea class="form-textarea" id="knowledge-content" placeholder="הדבק טקסט או כתוב הערות...">${item.content || ''}</textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">תקציר</label>
+          <textarea class="form-textarea" id="knowledge-summary" placeholder="תקציר קצר של החומר...">${item.summary || ''}</textarea>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-success" onclick="knowledgeEnv.saveItem('${item.id}')">💾 שמירה</button>
+          <button class="btn btn-secondary" onclick="knowledgeEnv.viewItem('${item.id}')">← ביטול</button>
         </div>
       </div>
     `;
